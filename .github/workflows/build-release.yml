@@ -20,6 +20,8 @@ on:
   release:
     types:
       - created
+  workflow_dispatch:
+
 
 jobs:
   build:
@@ -39,16 +41,15 @@ jobs:
       contents: read
 
     steps:
-    - name: Checkout Flyway
-      uses: actions/checkout@v2
-    - name: Set up JDK ${{ matrix.java }}
-      uses: actions/setup-java@v2
-      with:
-        java-version: ${{ matrix.java }}
-        distribution: 'temurin'
+      - name: Checkout Flyway
+        uses: actions/checkout@v2
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
 
-    - name: Build with Maven
-      run: mvn -B install -e --file pom.xml  "-Dgithub.os=${{ matrix.os }}"
-
-    - name: Build with Maven
-      run: mvn -B install -e --file pom.xml  "-Dgithub.os=${{ matrix.os }}"
+      - name: Build with Maven
+        run: mvn -B install -e --file pom.xml  "-Dgithub.os=${{ matrix.os }}"
+      - name: Smoke Test with Maven
+        run: mvn -B exec:java -e --file pom.xml -pl flyway-commandline "-Dexec.mainClass=org.flywaydb.commandline.Main" "-Dexec.args=-url='jdbc:h2:mem:db' -user=sa -password=Pa55w0rd info"
